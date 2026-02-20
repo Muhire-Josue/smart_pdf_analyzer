@@ -369,3 +369,34 @@ def reports(req: func.HttpRequest) -> func.HttpResponse:
 
     items.sort(key=lambda x: (x.get("generated_at_utc") or ""), reverse=True)
     return func.HttpResponse(json.dumps(items, ensure_ascii=False), status_code=200, mimetype="application/json")
+
+@app.route(route="analyze", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+@app.durable_client_input(client_name="client")
+async def PdfHttpStarter(req: func.HttpRequest, client: df.DurableOrchestrationClient):
+    logging.info("HTTP starter triggered")
+
+    try:
+        body = req.get_json()
+    except ValueError:
+        return func.HttpResponse(
+            json.dumps({"error": "Invalid JSON body. Expected {container, blob_name}."}),
+            status_code=400,
+            mimetype="application/json",
+        )
+
+    container = body.get("container") or "pdfs"
+    blob_name = body.get("blob_name") or body.get("name")
+    if not blob_name:
+        return func.HttpResponse(
+            json.dumps({"error": "Missing 'blob_name' in request body."}),
+            status_code=400,
+            mimetype="application/json",
+        )
+
+    instance_id = await client.start_new(
+        "PdfOrchestrator",
+        None,
+        {"container": container, "blob_name": blob_name},
+    )
+
+    return client.create_check_status_response(req, instance_id)
