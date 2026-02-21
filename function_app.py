@@ -329,7 +329,7 @@ def reports(req: func.HttpRequest) -> func.HttpResponse:
     if blob_name:
         try:
             entity = table.get_entity(partition_key=container, row_key=blob_name)
-            return func.HttpResponse(entity.get("report", "{}"), status_code=200, mimetype="application/json")
+            return func.HttpResponse(json.dumps(json.loads(entity.get("report", "{}")), indent=2), status_code=200, mimetype="application/json")
         except Exception as e:
             return func.HttpResponse(
                 json.dumps({"error": "Report not found", "details": str(e)}),
@@ -368,7 +368,7 @@ def reports(req: func.HttpRequest) -> func.HttpResponse:
         )
 
     items.sort(key=lambda x: (x.get("generated_at_utc") or ""), reverse=True)
-    return func.HttpResponse(json.dumps(items, ensure_ascii=False), status_code=200, mimetype="application/json")
+    return func.HttpResponse(json.dumps({"count": len(items), "results": items}, indent=2, ensure_ascii=False), status_code=200, mimetype="application/json")
 
 @app.route(route="analyze", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
 @app.durable_client_input(client_name="client")
