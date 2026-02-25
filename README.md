@@ -816,10 +816,6 @@ This project was designed as a distributed team project where different componen
 
 Although the implementation was completed by one member, the responsibilities were structured as follows to reflect proper distributed system design
 
-This project was designed as a distributed team project where different components of the system could be implemented independently. The work was logically divided based on system components and responsibilities.
-
-Although the implementation was completed by one member, the responsibilities were structured as follows to reflect proper distributed system design.
-
 ### Muhire Rutayisire
 
 Primary responsibilities:
